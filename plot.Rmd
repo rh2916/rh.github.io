@@ -1,0 +1,61 @@
+---
+title: "plot"
+author: "Rui Huang"
+date: "October 28, 2018"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(janitor)
+library(skimr)
+library(dplyr)
+library(plotly)
+library(flexdashboard)
+```
+
+```{r}
+library(p8105.datasets)
+data(ny_noaa)
+```
+
+```{r}
+Problem3_data = 
+  ny_noaa %>%
+  janitor::clean_names() %>%
+  separate(date, into = c("year", "month", "day"), sep = "-") %>%
+  mutate(tmax = as.numeric(tmax),
+         tmin = as.numeric(tmin),
+         prcp = prcp/10
+         ) %>%
+  mutate(tmax=tmax/10,
+         tmin = tmin/10) 
+```
+
+```{r}
+Boxplot = Problem3_data %>%
+  filter((month == "01" | month == "07") & !is.na(tmax)) %>%
+  group_by(month, year, id) %>%
+  summarize(mean_temp = mean(tmax)) %>% 
+  ggplot(aes(x = year, y = mean_temp)) +
+  geom_boxplot() +
+  facet_grid(.~month) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(
+    title = "Average maximum temperature in January and in July in each station across years",
+    x = "Year",
+    y = "Average temperature"
+  )
+ggplotly(Boxplot)
+```
+
+
+```{r}
+Problem3_data %>%
+     plot_ly(x = ~year, y = ~snow, type = "scatter", mode = "markers",
+      alpha = 0.5, 
+      color = ~month)
+```
+
+
